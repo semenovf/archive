@@ -1,0 +1,124 @@
+% layout 'default';
+% title l('Transaction');
+
+% content header => begin
+
+% w()->theme('metro');
+% w('lblAccount', 'Label');
+% w('lblAccount')->text('Account:');
+% w('lblCategory', 'Label')->text('Category:');
+% w('lblCorrespondent', 'Label')->text('Correspondent:');
+% w('lblDate', 'Label')->text('Date:');
+% w('lblTotal', 'Label')->text('Total:');
+% w('lblDescription', 'Label')->text('Description:');
+% w('comboAccount', 'ComboBox')->source('sourceForAccount')->selectedIndex(0)->autoComplete(1);
+% w('comboCategory', 'ComboBox')->source('sourceForCategory')->selectedIndex(0);
+% w('comboCorrespondent', 'ComboBox')->source('sourceForCorrespondent')->selectedIndex(0);
+% w('dtDate', 'DateTime');
+% w('editTotal', 'LineEdit')->width('100px');
+% w('btnAddAccount', 'PushButton')->text('+');
+
+% w('Header', 'GridLayout');
+% w('Header')->add(w('lblAccount'), 0, 0);
+% w('Header')->add(w('comboAccount'), 0, 1);
+% w('Header')->add(w('btnAddAccount'), 0, 2);
+% w('Header')->add(w('lblDate'), 0, 3);
+% w('Header')->add(w('dtDate'), 0, 4);
+% w('Header')->add(w('lblCategory'), 1, 0);
+% w('Header')->add(w('comboCategory'), 1, 1);
+% w('Header')->add(w('lblTotal'), 1, 3);
+% w('Header')->add(w('editTotal'), 1, 4);
+% w('Header')->add(w('lblCorrespondent'), 2, 0);
+% w('Header')->add(w('comboCorrespondent'), 2, 1);
+
+% w('table', 'Table');
+
+% w('expanderSpec', 'Expander')->header('Specification');
+% w('editDescription', 'LineEdit')->width('100%');
+% w('btnCancel', 'PushButton')->text('Cancel');
+% w('btnAccept', 'PushButton')->text('Accept')->submit(1);
+% w('spacer', 'Spacer')->stretch(99);
+
+%= widget_imports
+
+<script type="text/javascript">
+    
+var sourceForAccount = [
+      "Cache"
+    , "Account in JPMorgan Chase"
+    , "Account in Fed ;)"
+    , "Account in Bank of New York"
+    , "Account in Deutsche Bank"
+    , "Account in Bank of England"
+    , "Account in Bank of Japan"
+    , "Account in Bank of China"
+    , "Account in HSBC Holdings plc"
+];
+
+var sourceForCategory = [
+      "Foodstuffs"
+    , "Household appliances"
+    , "Footwear"
+    , "Auto"
+    , "Public service"
+];
+
+var sourceForCorrespondent = [
+      "Elisey TC"
+    , "Aida TC"
+    , "Piknik"
+];
+
+var sourceForTable = new Array();
+var firstNames =
+[
+    "Andrew", "Nancy", "Shelley", "Regina", "Yoshi", "Antoni", "Mayumi", "Ian", "Peter", "Lars", "Petra", "Martin", "Sven", "Elio", "Beate", "Cheryl", "Michael", "Guylene"
+];
+var lastNames =
+[
+    "Fuller", "Davolio", "Burke", "Murphy", "Nagase", "Saavedra", "Ohno", "Devling", "Wilson", "Peterson", "Winkler", "Bein", "Petersen", "Rossi", "Vileid", "Saylor", "Bjorn", "Nodier"
+];
+var productNames =
+[
+    "Black Tea", "Green Tea", "Caffe Espresso", "Doubleshot Espresso", "Caffe Latte", "White Chocolate Mocha", "Cramel Latte", "Caffe Americano", "Cappuccino", "Espresso Truffle", "Espresso con Panna", "Peppermint Mocha Twist"
+];
+var priceValues =
+[
+    "2.25", "1.5", "3.0", "3.3", "4.5", "3.6", "3.8", "2.5", "5.0", "1.75", "3.25", "4.0"
+];
+for (var i = 0; i < 100; i++) {
+    var row = {};
+    var productindex = Math.floor(Math.random() * productNames.length);
+    var price = parseFloat(priceValues[productindex]);
+    var quantity = 1 + Math.round(Math.random() * 10);
+    row["firstname"] = firstNames[Math.floor(Math.random() * firstNames.length)];
+    row["lastname"] = lastNames[Math.floor(Math.random() * lastNames.length)];
+    row["productname"] = productNames[productindex];
+    row["price"] = price;
+    row["quantity"] = quantity;
+    row["total"] = price * quantity;
+    sourceForTable[i] = row;
+}
+var source =
+{
+    localdata: sourceForTable,
+    datatype: "array"
+};
+var dataAdapter = new $.jqx.dataAdapter(source, {
+    loadComplete: function (sourceForTable) { },
+    loadError: function (xhr, status, error) { }      
+});
+
+$(document).ready(function () {
+%= widget_controllers
+});
+</script>
+
+% end
+
+%= widget_render 'Header'
+%= widget_render 'expanderSpec';
+
+<div><%=widget_render 'lblDescription' %></div>
+<%= widget_render 'editDescription' %>
+<div><%=widget_render 'btnCancel' %> <%=widget_render 'spacer' %> <%=widget_render 'btnAccept' %></div>

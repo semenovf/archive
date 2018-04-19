@@ -1,0 +1,9 @@
+{
+      "db_name": "hg"
+    , "db_host": "localhost"
+    , "db_port": 3306
+    , "db_user": "root"
+    , "db_password": "rdflhfnehf"
+    , "countries.table" : "countries"
+    , "currencies.table" : "currencies"
+}
