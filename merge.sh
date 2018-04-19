@@ -17,7 +17,8 @@
 #REPO_NAME=hgweb
 #REPO_NAME=cwt
 #REPO_NAME=cwt-sqlite3
-REPO_NAME=cwt-mysql5
+#REPO_NAME=cwt-mysql5
+REPO_NAME=Class-Accessor-Validated
 
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
