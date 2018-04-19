@@ -15,7 +15,8 @@
 #REPO_NAME=rw-meccano
 #REPO_NAME=cwt-core
 #REPO_NAME=hgweb
-REPO_NAME=cwt
+#REPO_NAME=cwt
+REPO_NAME=cwt-sqlite3
 
 
 git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
