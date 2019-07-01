@@ -23,10 +23,15 @@
 #REPO_NAME=Validator-Var
 #REPO_NAME=MetaPage
 #REPO_NAME=DBI-DDI
-REPO_NAME=Dancer-Template-MetaPage
+#REPO_NAME=Dancer-Template-MetaPage
+#REPO_NAME=Text-Simplify
+#REPO_NAME=jq-sc
+#REPO_NAME=simple-clock-indicator
+REPO_NAME=jq-logindialog-qt
 
+mkdir -p ${REPO_NAME} || exit -1
 
-git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git
-git fetch ${REPO_NAME}
-git merge ${REPO_NAME}/master
-git remote remove ${REPO_NAME}
+git remote add ${REPO_NAME} git@github.com:semenovf/${REPO_NAME}.git \
+    && git -C ${REPO_NAME} fetch ${REPO_NAME}                        \
+    && git merge --allow-unrelated-histories ${REPO_NAME}/master     \
+    && git remote remove ${REPO_NAME}
